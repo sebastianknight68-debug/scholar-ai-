@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-export const CLAUDE_MODEL = "claude-sonnet-4-20250514";
+// Use the stable Sonnet 4.5 alias — always points to a valid model in Anthropic's catalog.
+export const CLAUDE_MODEL = "claude-sonnet-4-5";
 
 let _client: Anthropic | null = null;
 export function getAnthropic() {
