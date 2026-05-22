@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { VoiceRecorder } from "@/components/new/VoiceRecorder";
 import { FileUploader } from "@/components/new/FileUploader";
 import { NotesInput } from "@/components/new/NotesInput";
 import { SourceList, type Source } from "@/components/new/SourceList";
@@ -10,7 +9,7 @@ import { UpgradeModal } from "@/components/new/UpgradeModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Mic, FileText, StickyNote } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 
 function uid() {
@@ -24,6 +23,7 @@ export default function NewStudySetPage() {
   const [title, setTitle] = React.useState("");
   const [generating, setGenerating] = React.useState(false);
   const [showUpgrade, setShowUpgrade] = React.useState(false);
+  const [upgradeMsg, setUpgradeMsg] = React.useState<string | null>(null);
 
   function addSource(s: Omit<Source, "id">) {
     if (!s.text || s.text.trim().length < 5) return;
@@ -47,6 +47,7 @@ export default function NewStudySetPage() {
       });
       const data = await res.json();
       if (res.status === 402) {
+        setUpgradeMsg(data?.error ?? null);
         setShowUpgrade(true);
         return;
       }
@@ -64,33 +65,45 @@ export default function NewStudySetPage() {
   }
 
   return (
-    <div className="container max-w-6xl py-10">
+    <div className="container max-w-5xl py-10">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">New study set</h1>
         <p className="text-sm text-muted">
-          Combine a recording, files, and your own notes — then generate everything in one click.
+          Upload files (including MP3 voice recordings) or paste your notes — then generate everything in one click.
         </p>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <VoiceRecorder
-          onTranscript={(text, filename) =>
-            addSource({ type: "audio", text, label: filename })
-          }
-        />
+      <Card className="mt-6 p-5">
+        <div className="grid gap-3 sm:grid-cols-3 text-sm text-muted">
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-primary-soft" />
+            <span>PDFs, DOCX, PPTX, images of handwritten notes</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Mic className="h-4 w-4 text-primary-soft" />
+            <span>MP3 / WAV / M4A voice recordings (Whisper-transcribed)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <StickyNote className="h-4 w-4 text-primary-soft" />
+            <span>Pasted text and typed notes</span>
+          </div>
+        </div>
+      </Card>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <FileUploader
           onParsed={({ type, text, filename }) =>
             addSource({ type, text, label: filename })
           }
         />
-      </div>
-
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <NotesInput
           onAdd={(text) =>
             addSource({ type: "text", text, label: "Typed notes" })
           }
         />
+      </div>
+
+      <div className="mt-4">
         <SourceList sources={sources} onRemove={removeSource} />
       </div>
 
@@ -122,7 +135,11 @@ export default function NewStudySetPage() {
         </div>
       </Card>
 
-      <UpgradeModal open={showUpgrade} onOpenChange={setShowUpgrade} />
+      <UpgradeModal
+        open={showUpgrade}
+        onOpenChange={setShowUpgrade}
+        description={upgradeMsg ?? undefined}
+      />
     </div>
   );
 }

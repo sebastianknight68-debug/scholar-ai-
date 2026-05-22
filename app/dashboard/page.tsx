@@ -4,7 +4,7 @@ import { UsageBar } from "@/components/dashboard/UsageBar";
 import { StudySetCard } from "@/components/dashboard/StudySetCard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Mic, Upload, Plus, Sparkles } from "lucide-react";
+import { Upload, Plus, Sparkles } from "lucide-react";
 import type { Plan } from "@/lib/plans";
 import type { StudySetRow } from "@/lib/types";
 
@@ -16,11 +16,12 @@ export default async function DashboardHome() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // profile + sets in parallel
   const [profileRes, setsRes] = await Promise.all([
     supabase
       .from("users")
-      .select("plan, recordings_used_this_month")
+      .select(
+        "plan, file_uploads_used_this_month, voice_minutes_used_this_month",
+      )
       .eq("id", user!.id)
       .maybeSingle(),
     supabase
@@ -31,7 +32,8 @@ export default async function DashboardHome() {
   ]);
 
   const plan: Plan = (profileRes.data?.plan as Plan) ?? "free";
-  const used = profileRes.data?.recordings_used_this_month ?? 0;
+  const filesUsed = profileRes.data?.file_uploads_used_this_month ?? 0;
+  const voiceUsed = profileRes.data?.voice_minutes_used_this_month ?? 0;
   const sets = (setsRes.data ?? []) as StudySetRow[];
 
   return (
@@ -40,25 +42,20 @@ export default async function DashboardHome() {
         <div>
           <h1 className="text-3xl font-bold">Your study sets</h1>
           <p className="mt-1 text-sm text-muted">
-            Record a lecture or upload files to create a new study set.
+            Upload files or an MP3 voice recording to create a new study set.
           </p>
         </div>
         <div className="flex gap-2">
-          <Button asChild variant="secondary">
-            <Link href="/dashboard/new?source=upload">
-              <Upload className="h-4 w-4" /> Upload files
-            </Link>
-          </Button>
           <Button asChild>
-            <Link href="/dashboard/new?source=record">
-              <Mic className="h-4 w-4" /> Record lecture
+            <Link href="/dashboard/new">
+              <Upload className="h-4 w-4" /> New study set
             </Link>
           </Button>
         </div>
       </div>
 
       <div className="mt-6">
-        <UsageBar plan={plan} used={used} />
+        <UsageBar plan={plan} filesUsed={filesUsed} voiceMinutesUsed={voiceUsed} />
       </div>
 
       {sets.length === 0 ? (
@@ -68,8 +65,8 @@ export default async function DashboardHome() {
           </div>
           <h2 className="mt-4 text-xl font-semibold">No study sets yet</h2>
           <p className="mx-auto mt-1 max-w-md text-sm text-muted">
-            Create your first set — record a lecture in-browser, drop in slides or
-            PDFs, or paste your notes. We'll turn it into a full study kit in seconds.
+            Create your first set — drop in slides, PDFs, MP3 voice recordings,
+            or paste notes. We'll turn it into a full study kit in seconds.
           </p>
           <Button asChild className="mt-6">
             <Link href="/dashboard/new">

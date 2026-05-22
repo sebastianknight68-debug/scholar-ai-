@@ -14,18 +14,24 @@ import { Button } from "@/components/ui/button";
 export function UpgradeModal({
   open,
   onOpenChange,
+  title,
+  description,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  title?: string;
+  description?: string;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>You've hit your free monthly limit</DialogTitle>
+          <DialogTitle>
+            {title ?? "You've hit your plan's limit"}
+          </DialogTitle>
           <DialogDescription>
-            The Free plan includes 3 study sets per month. Upgrade to Student for
-            unlimited sets, all features, and PDF export.
+            {description ??
+              "Upgrade to keep going — Starter gives you 10 uploads + 1 hour of voice scanning per month for €10, with all AI features unlocked."}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="mt-2">

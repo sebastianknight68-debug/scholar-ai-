@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Sparkles } from "lucide-react";
-import { PLANS, type Plan } from "@/lib/plans";
+import { PLANS, PLAN_KEYS, type Plan } from "@/lib/plans";
 import { CheckoutButton } from "@/components/billing/CheckoutButton";
 
 export const dynamic = "force-dynamic";
@@ -21,15 +21,15 @@ export default async function BillingPage() {
   const current: Plan = (profile?.plan as Plan) ?? "free";
 
   return (
-    <div className="container max-w-5xl py-10">
+    <div className="container max-w-6xl py-10">
       <h1 className="text-3xl font-bold">Billing</h1>
       <p className="mt-1 text-sm text-muted">
         You're currently on the{" "}
         <span className="font-semibold text-white">{PLANS[current].name}</span> plan.
       </p>
 
-      <div className="mt-8 grid gap-4 md:grid-cols-3">
-        {(["free", "student", "pro"] as const).map((key) => {
+      <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {PLAN_KEYS.map((key) => {
           const p = PLANS[key];
           const isCurrent = current === key;
           return (
@@ -45,11 +45,11 @@ export default async function BillingPage() {
                   )}
                 </div>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold">${p.price}</span>
+                  <span className="text-3xl font-bold">€{p.price}</span>
                   <span className="text-sm text-muted">/mo</span>
                 </div>
                 <ul className="mt-5 space-y-2 text-sm">
-                  {p.features.map((f) => (
+                  {p.perks.map((f) => (
                     <li key={f} className="flex items-start gap-2">
                       <Check className="mt-0.5 h-4 w-4 text-success" />
                       {f}

@@ -11,6 +11,7 @@ import { FlashcardsTab } from "@/components/study/FlashcardsTab";
 import { QuizTab } from "@/components/study/QuizTab";
 import { SummaryTab } from "@/components/study/SummaryTab";
 import { ChatTab } from "@/components/study/ChatTab";
+import { LockedFeature } from "@/components/study/LockedFeature";
 import {
   ArrowLeft,
   ScrollText,
@@ -19,8 +20,10 @@ import {
   ListChecks,
   Lightbulb,
   MessagesSquare,
+  Lock,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { planHasFeature, type Plan } from "@/lib/plans";
 import type { ChatMessage, Flashcard, QuizQuestion, Summary } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -31,12 +34,22 @@ export default async function StudySetPage({
   params: { id: string };
 }) {
   const supabase = createSupabaseServerClient();
-  const { data: set } = await supabase
-    .from("study_sets")
-    .select("id, title, created_at, sources, status")
-    .eq("id", params.id)
-    .maybeSingle();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const [setRes, profileRes] = await Promise.all([
+    supabase
+      .from("study_sets")
+      .select("id, title, created_at, sources, status")
+      .eq("id", params.id)
+      .maybeSingle(),
+    supabase.from("users").select("plan").eq("id", user!.id).maybeSingle(),
+  ]);
+  const set = setRes.data;
   if (!set) notFound();
+
+  const plan: Plan = (profileRes.data?.plan as Plan) ?? "free";
 
   const [matRes, convRes] = await Promise.all([
     supabase
@@ -54,6 +67,8 @@ export default async function StudySetPage({
   ]);
   const mat = matRes.data;
   const initialMessages: ChatMessage[] = (convRes.data?.messages as ChatMessage[]) ?? [];
+
+  const lockIcon = <Lock className="h-3 w-3 ml-0.5" />;
 
   return (
     <div className="container max-w-6xl py-8">
@@ -97,16 +112,16 @@ export default async function StudySetPage({
             <BookOpen className="h-4 w-4" /> Smart notes
           </TabsTrigger>
           <TabsTrigger value="flashcards">
-            <Brain className="h-4 w-4" /> Flashcards
+            <Brain className="h-4 w-4" /> Flashcards{!planHasFeature(plan, "flashcards") && lockIcon}
           </TabsTrigger>
           <TabsTrigger value="quiz">
-            <ListChecks className="h-4 w-4" /> Quiz
+            <ListChecks className="h-4 w-4" /> Quiz{!planHasFeature(plan, "quiz") && lockIcon}
           </TabsTrigger>
           <TabsTrigger value="summary">
-            <Lightbulb className="h-4 w-4" /> Summary
+            <Lightbulb className="h-4 w-4" /> Summary{!planHasFeature(plan, "summary") && lockIcon}
           </TabsTrigger>
           <TabsTrigger value="chat">
-            <MessagesSquare className="h-4 w-4" /> Chat
+            <MessagesSquare className="h-4 w-4" /> Chat{!planHasFeature(plan, "chat") && lockIcon}
           </TabsTrigger>
         </TabsList>
 
@@ -117,16 +132,35 @@ export default async function StudySetPage({
           <NotesTab notes={mat?.smart_notes ?? null} title={set.title} />
         </TabsContent>
         <TabsContent value="flashcards">
-          <FlashcardsTab cards={(mat?.flashcards as Flashcard[]) ?? null} />
+          {planHasFeature(plan, "flashcards") ? (
+            <FlashcardsTab cards={(mat?.flashcards as Flashcard[]) ?? null} />
+          ) : (
+            <LockedFeature featureName="Flashcards" />
+          )}
         </TabsContent>
         <TabsContent value="quiz">
-          <QuizTab quiz={(mat?.quiz as QuizQuestion[]) ?? null} />
+          {planHasFeature(plan, "quiz") ? (
+            <QuizTab quiz={(mat?.quiz as QuizQuestion[]) ?? null} />
+          ) : (
+            <LockedFeature featureName="The quiz" />
+          )}
         </TabsContent>
         <TabsContent value="summary">
-          <SummaryTab summary={(mat?.summary as Summary) ?? null} />
+          {planHasFeature(plan, "summary") ? (
+            <SummaryTab summary={(mat?.summary as Summary) ?? null} />
+          ) : (
+            <LockedFeature featureName="The summary" />
+          )}
         </TabsContent>
         <TabsContent value="chat">
-          <ChatTab studySetId={set.id} initialMessages={initialMessages} />
+          {planHasFeature(plan, "chat") ? (
+            <ChatTab studySetId={set.id} initialMessages={initialMessages} />
+          ) : (
+            <LockedFeature
+              featureName="Tutor chat"
+              description="Ask Claude questions about your lecture with full context. Upgrade to unlock."
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>

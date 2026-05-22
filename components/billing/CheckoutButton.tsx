@@ -4,8 +4,9 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+import { PLANS } from "@/lib/plans";
 
-export function CheckoutButton({ plan }: { plan: "student" | "pro" }) {
+export function CheckoutButton({ plan }: { plan: "starter" | "pro" | "max" }) {
   const [loading, setLoading] = React.useState(false);
   const { toast } = useToast();
 
@@ -33,7 +34,7 @@ export function CheckoutButton({ plan }: { plan: "student" | "pro" }) {
   return (
     <Button className="w-full" onClick={go} disabled={loading}>
       {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-      {plan === "student" ? "Upgrade to Student" : "Upgrade to Pro"}
+      Choose {PLANS[plan].name}
     </Button>
   );
 }

@@ -5,13 +5,13 @@ import { getStripe } from "@/lib/stripe";
 import { PLAN_PRICE_IDS } from "@/lib/stripe";
 
 export const runtime = "nodejs";
-// Stripe needs the raw request body to verify signatures.
 export const dynamic = "force-dynamic";
 
-function priceIdToPlan(priceId: string | null | undefined): "student" | "pro" | null {
+function priceIdToPlan(priceId: string | null | undefined): "starter" | "pro" | "max" | null {
   if (!priceId) return null;
-  if (priceId === PLAN_PRICE_IDS.student) return "student";
+  if (priceId === PLAN_PRICE_IDS.starter) return "starter";
   if (priceId === PLAN_PRICE_IDS.pro) return "pro";
+  if (priceId === PLAN_PRICE_IDS.max) return "max";
   return null;
 }
 
@@ -19,10 +19,7 @@ export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!sig || !secret) {
-    return NextResponse.json(
-      { error: "Webhook not configured" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 400 });
   }
 
   const raw = await req.text();
@@ -48,7 +45,7 @@ export async function POST(req: NextRequest) {
           const subId = String(session.subscription);
           const sub = await stripe.subscriptions.retrieve(subId);
           const priceId = sub.items.data[0]?.price.id ?? null;
-          const plan = priceIdToPlan(priceId) ?? "student";
+          const plan = priceIdToPlan(priceId) ?? "starter";
           await admin
             .from("users")
             .update({
@@ -89,7 +86,6 @@ export async function POST(req: NextRequest) {
         break;
       }
       default:
-        // ignore other events
         break;
     }
   } catch (err) {

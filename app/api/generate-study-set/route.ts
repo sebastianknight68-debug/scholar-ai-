@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { canCreateStudySet, type Plan } from "@/lib/plans";
+import { canUploadFile, type Plan } from "@/lib/plans";
 import {
   generateFlashcards,
   generateQuiz,
@@ -26,6 +26,9 @@ type IncomingSource = {
 };
 
 export async function POST(req: NextRequest) {
+  let studySetId: string | null = null;
+  const admin = createSupabaseAdminClient();
+
   try {
     const body = await req.json();
     const sources: IncomingSource[] = Array.isArray(body?.sources) ? body.sources : [];
@@ -42,17 +45,20 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     // ---------- plan check ----------
-    const admin = createSupabaseAdminClient();
     const { data: profile } = await admin
       .from("users")
-      .select("plan, recordings_used_this_month, recordings_period_start")
+      .select("plan, file_uploads_used_this_month")
       .eq("id", user.id)
       .maybeSingle();
     const plan: Plan = (profile?.plan as Plan) ?? "free";
-    const used = profile?.recordings_used_this_month ?? 0;
-    if (!canCreateStudySet(plan, used)) {
+    const filesUsed = profile?.file_uploads_used_this_month ?? 0;
+
+    if (!canUploadFile(plan, filesUsed)) {
       return NextResponse.json(
-        { error: "Monthly limit reached on your plan. Upgrade for unlimited sets." },
+        {
+          error:
+            "You've used all of your file uploads on this plan. Upgrade for more.",
+        },
         { status: 402 },
       );
     }
@@ -66,7 +72,10 @@ export async function POST(req: NextRequest) {
     const transcript = transcriptParts.join("\n\n").trim();
     const combined = [transcript, ...otherParts].filter(Boolean).join("\n\n").trim();
     if (combined.length < 30) {
-      return NextResponse.json({ error: "Combined source content is too short." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Combined source content is too short." },
+        { status: 400 },
+      );
     }
 
     // ---------- create the set + sources rows up front ----------
@@ -82,7 +91,7 @@ export async function POST(req: NextRequest) {
       .select("id")
       .single();
     if (setErr || !setRow) throw new Error(setErr?.message ?? "Could not create study set");
-    const studySetId = setRow.id as string;
+    studySetId = setRow.id as string;
 
     if (sources.length > 0) {
       await admin.from("sources").insert(
@@ -139,11 +148,19 @@ export async function POST(req: NextRequest) {
       .eq("id", studySetId);
 
     // ---------- usage increment ----------
-    await admin.rpc("increment_recording_usage", { p_user: user.id });
+    await admin.rpc("increment_usage", {
+      p_user: user.id,
+      p_metric: "file_uploads",
+      p_amount: 1,
+    });
 
     return NextResponse.json({ id: studySetId });
   } catch (err) {
     console.error("generate-study-set error", err);
+    // Mark the row as errored so it doesn't stay stuck on "processing" forever
+    if (studySetId) {
+      await admin.from("study_sets").update({ status: "error" }).eq("id", studySetId);
+    }
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Generation failed" },
       { status: 500 },

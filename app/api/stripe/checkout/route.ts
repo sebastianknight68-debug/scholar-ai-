@@ -5,15 +5,17 @@ import { getStripe, hasStripe, PLAN_PRICE_IDS } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 
+type CheckoutPlan = "starter" | "pro" | "max";
+
 export async function POST(req: NextRequest) {
   try {
-    const { plan } = (await req.json()) as { plan?: "student" | "pro" };
-    if (plan !== "student" && plan !== "pro") {
+    const { plan } = (await req.json()) as { plan?: CheckoutPlan };
+    if (plan !== "starter" && plan !== "pro" && plan !== "max") {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
     if (!hasStripe()) {
       return NextResponse.json(
-        { error: "Stripe is not configured. Set STRIPE_SECRET_KEY in .env.local." },
+        { error: "Stripe is not configured. Set STRIPE_SECRET_KEY in env." },
         { status: 503 },
       );
     }

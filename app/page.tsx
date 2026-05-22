@@ -178,8 +178,8 @@ export default function LandingPage() {
             <h2 className="text-3xl font-bold md:text-4xl">Simple, student-friendly pricing</h2>
             <p className="mt-3 text-muted">Start free. Upgrade when you need more.</p>
           </div>
-          <div className="mx-auto mt-12 grid max-w-5xl gap-4 md:grid-cols-3">
-            {(["free", "student", "pro"] as const).map((key) => {
+          <div className="mx-auto mt-12 grid max-w-6xl gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {(["free", "starter", "pro", "max"] as const).map((key) => {
               const p = PLANS[key];
               return (
                 <Card
@@ -196,11 +196,11 @@ export default function LandingPage() {
                   )}
                   <h3 className="text-lg font-semibold">{p.name}</h3>
                   <div className="mt-3 flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">${p.price}</span>
+                    <span className="text-4xl font-bold">€{p.price}</span>
                     <span className="text-sm text-muted">/mo</span>
                   </div>
                   <ul className="mt-6 space-y-3 text-sm">
-                    {p.features.map((f) => (
+                    {p.perks.map((f) => (
                       <li key={f} className="flex items-start gap-2">
                         <Check className="mt-0.5 h-4 w-4 text-success" />
                         <span>{f}</span>
