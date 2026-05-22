@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import { PLANS } from "@/lib/plans";
 
-export function CheckoutButton({ plan }: { plan: "starter" | "pro" | "max" }) {
+export function CheckoutButton({ plan }: { plan: "student" | "pro" | "max" }) {
   const [loading, setLoading] = React.useState(false);
   const { toast } = useToast();
 

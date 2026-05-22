@@ -34,7 +34,7 @@ export function LockedFeature({
         </Button>
       </div>
       <p className="mt-6 text-xs text-muted">
-        Starter unlocks everything for €10/month.
+        Student unlocks everything for €9/month.
       </p>
     </Card>
   );

@@ -31,7 +31,7 @@ export function UpgradeModal({
           </DialogTitle>
           <DialogDescription>
             {description ??
-              "Upgrade to keep going — Starter gives you 10 uploads + 1 hour of voice scanning per month for €10, with all AI features unlocked."}
+              "Upgrade to keep going — Student gives you 15 generations + 1 hour of voice scanning per month for €9, with all AI features unlocked."}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="mt-2">

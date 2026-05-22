@@ -1,4 +1,4 @@
-export type Plan = "free" | "starter" | "pro" | "max";
+export type Plan = "free" | "student" | "pro" | "max";
 
 // Feature flags — which tabs a plan unlocks. Smart Notes is always free.
 export type FeatureKey = "notes" | "flashcards" | "quiz" | "summary" | "chat" | "voice";
@@ -9,8 +9,8 @@ export const PLANS: Record<
     name: string;
     price: number; // monthly, EUR
     currency: "EUR";
-    fileUploadLimit: number;       // study sets per month, Infinity for unlimited
-    voiceMinutesLimit: number;     // 1 token = 1 minute, Infinity for unlimited
+    fileUploadLimit: number;       // generations per month (study set / essay / presentation)
+    voiceMinutesLimit: number;     // 1 token = 1 minute
     features: Record<FeatureKey, boolean>;
     perks: string[];
     cta: string;
@@ -21,7 +21,7 @@ export const PLANS: Record<
     name: "Free",
     price: 0,
     currency: "EUR",
-    fileUploadLimit: 1,
+    fileUploadLimit: 2,
     voiceMinutesLimit: 0,
     features: {
       notes: true,
@@ -32,17 +32,17 @@ export const PLANS: Record<
       voice: false,
     },
     perks: [
-      "1 file upload / month",
+      "2 generations / month",
       "Smart Notes only",
       "Try the experience",
     ],
     cta: "Start free",
   },
-  starter: {
-    name: "Starter",
-    price: 10,
+  student: {
+    name: "Student",
+    price: 9,
     currency: "EUR",
-    fileUploadLimit: 10,
+    fileUploadLimit: 15,
     voiceMinutesLimit: 60,
     features: {
       notes: true,
@@ -53,18 +53,19 @@ export const PLANS: Record<
       voice: true,
     },
     perks: [
-      "10 file uploads / month",
+      "15 generations / month",
       "1 hour of voice scanning",
       "All AI features unlocked",
+      "Essays + presentations + study sets",
       "Chat with your lectures",
     ],
-    cta: "Choose Starter",
+    cta: "Choose Student",
   },
   pro: {
     name: "Pro",
-    price: 20,
+    price: 19,
     currency: "EUR",
-    fileUploadLimit: 30,
+    fileUploadLimit: 40,
     voiceMinutesLimit: 300,
     features: {
       notes: true,
@@ -75,20 +76,21 @@ export const PLANS: Record<
       voice: true,
     },
     perks: [
-      "30 file uploads / month",
+      "40 generations / month",
       "5 hours of voice scanning",
       "All AI features unlocked",
       "Priority processing",
+      "Early access to new features",
     ],
     cta: "Choose Pro",
     highlight: true,
   },
   max: {
     name: "Max",
-    price: 50,
+    price: 39,
     currency: "EUR",
-    fileUploadLimit: 100,
-    voiceMinutesLimit: 600,
+    fileUploadLimit: 120,
+    voiceMinutesLimit: 900,
     features: {
       notes: true,
       flashcards: true,
@@ -98,17 +100,18 @@ export const PLANS: Record<
       voice: true,
     },
     perks: [
-      "100 file uploads / month",
-      "10 hours of voice scanning",
+      "120 generations / month",
+      "15 hours of voice scanning",
       "Everything in Pro",
-      "Early access to new features",
+      "Highest priority queue",
+      "Future team sharing",
     ],
     cta: "Choose Max",
   },
 };
 
-export const PLAN_KEYS: Plan[] = ["free", "starter", "pro", "max"];
-export const PAID_PLAN_KEYS: Exclude<Plan, "free">[] = ["starter", "pro", "max"];
+export const PLAN_KEYS: Plan[] = ["free", "student", "pro", "max"];
+export const PAID_PLAN_KEYS: Exclude<Plan, "free">[] = ["student", "pro", "max"];
 
 // ---- formatting helpers ----
 

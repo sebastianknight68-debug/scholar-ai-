@@ -11,8 +11,8 @@ export function getStripe() {
 
 export const hasStripe = () => !!process.env.STRIPE_SECRET_KEY;
 
-export const PLAN_PRICE_IDS: Record<"starter" | "pro" | "max", string> = {
-  starter: process.env.STRIPE_PRICE_ID_STARTER ?? "",
+export const PLAN_PRICE_IDS: Record<"student" | "pro" | "max", string> = {
+  student: process.env.STRIPE_PRICE_ID_STUDENT ?? "",
   pro: process.env.STRIPE_PRICE_ID_PRO ?? "",
   max: process.env.STRIPE_PRICE_ID_MAX ?? "",
 };

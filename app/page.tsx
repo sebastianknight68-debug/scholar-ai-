@@ -179,7 +179,7 @@ export default function LandingPage() {
             <p className="mt-3 text-muted">Start free. Upgrade when you need more.</p>
           </div>
           <div className="mx-auto mt-12 grid max-w-6xl gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {(["free", "starter", "pro", "max"] as const).map((key) => {
+            {(["free", "student", "pro", "max"] as const).map((key) => {
               const p = PLANS[key];
               return (
                 <Card

@@ -5,12 +5,12 @@ import { getStripe, hasStripe, PLAN_PRICE_IDS } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 
-type CheckoutPlan = "starter" | "pro" | "max";
+type CheckoutPlan = "student" | "pro" | "max";
 
 export async function POST(req: NextRequest) {
   try {
     const { plan } = (await req.json()) as { plan?: CheckoutPlan };
-    if (plan !== "starter" && plan !== "pro" && plan !== "max") {
+    if (plan !== "student" && plan !== "pro" && plan !== "max") {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
     if (!hasStripe()) {

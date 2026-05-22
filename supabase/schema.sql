@@ -8,7 +8,7 @@ create extension if not exists "pgcrypto";
 create table if not exists public.users (
   id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
-  plan text not null default 'free' check (plan in ('free','starter','pro','max')),
+  plan text not null default 'free' check (plan in ('free','student','pro','max')),
   file_uploads_used_this_month int not null default 0,
   voice_minutes_used_this_month int not null default 0,
   recordings_period_start timestamptz not null default date_trunc('month', now()),

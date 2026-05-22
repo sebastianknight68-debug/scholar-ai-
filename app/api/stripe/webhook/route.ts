@@ -7,9 +7,9 @@ import { PLAN_PRICE_IDS } from "@/lib/stripe";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function priceIdToPlan(priceId: string | null | undefined): "starter" | "pro" | "max" | null {
+function priceIdToPlan(priceId: string | null | undefined): "student" | "pro" | "max" | null {
   if (!priceId) return null;
-  if (priceId === PLAN_PRICE_IDS.starter) return "starter";
+  if (priceId === PLAN_PRICE_IDS.student) return "student";
   if (priceId === PLAN_PRICE_IDS.pro) return "pro";
   if (priceId === PLAN_PRICE_IDS.max) return "max";
   return null;
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
           const subId = String(session.subscription);
           const sub = await stripe.subscriptions.retrieve(subId);
           const priceId = sub.items.data[0]?.price.id ?? null;
-          const plan = priceIdToPlan(priceId) ?? "starter";
+          const plan = priceIdToPlan(priceId) ?? "student";
           await admin
             .from("users")
             .update({

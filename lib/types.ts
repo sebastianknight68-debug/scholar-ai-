@@ -44,7 +44,7 @@ export type GeneratedPresentation = {
 export type UserProfileRow = {
   id: string;
   email: string;
-  plan: "free" | "starter" | "pro" | "max";
+  plan: "free" | "student" | "pro" | "max";
   file_uploads_used_this_month: number;
   voice_minutes_used_this_month: number;
   recordings_period_start: string;
