@@ -1,12 +1,19 @@
 import { CLAUDE_MODEL, getAnthropic } from "@/lib/anthropic";
 import {
+  ESSAY_PROMPT,
   FLASHCARDS_PROMPT,
+  PRESENTATION_PROMPT,
   QUIZ_PROMPT,
   SMART_NOTES_PROMPT,
   SUMMARY_PROMPT,
   TITLE_PROMPT,
 } from "@/lib/prompts";
-import type { Flashcard, QuizQuestion, Summary } from "@/lib/types";
+import type {
+  Flashcard,
+  GeneratedPresentation,
+  QuizQuestion,
+  Summary,
+} from "@/lib/types";
 
 const MAX_CONTENT_CHARS = 60_000; // safety cap on source size sent to Claude
 
@@ -83,6 +90,45 @@ export async function generateSummary(content: string): Promise<Summary> {
   };
 }
 
+// ---------- ESSAY ----------
+
+export async function generateEssay(opts: {
+  sample: string;
+  topic: string;
+  words: number;
+}): Promise<string> {
+  const filled = ESSAY_PROMPT.replace("{{SAMPLE}}", opts.sample.slice(0, 8000))
+    .replace("{{TOPIC}}", opts.topic.slice(0, 1000))
+    .replace("{{WORDS}}", String(opts.words));
+  // Reserve ~1.6x words worth of tokens to be safe
+  const maxTokens = Math.min(4000, Math.max(800, Math.ceil(opts.words * 2)));
+  const out = await callClaude(filled, maxTokens);
+  return out.trim();
+}
+
+// ---------- PRESENTATION ----------
+
+export async function generatePresentation(opts: {
+  content: string;
+  slides: number;
+  length: "short" | "medium" | "long";
+  includeQuiz: boolean;
+}): Promise<GeneratedPresentation> {
+  const filled = PRESENTATION_PROMPT.replace(
+    "{{CONTENT}}",
+    opts.content.slice(0, MAX_CONTENT_CHARS),
+  )
+    .replace("{{SLIDES}}", String(opts.slides))
+    .replace("{{LENGTH}}", opts.length)
+    .replace("{{QUIZ}}", String(opts.includeQuiz));
+  const raw = await callClaude(filled, 4000);
+  const parsed = extractJson<GeneratedPresentation>(raw);
+  return {
+    slides: Array.isArray(parsed.slides) ? parsed.slides : [],
+    quiz: Array.isArray(parsed.quiz) ? parsed.quiz : [],
+  };
+}
+
 // ---------- mock generators used when no ANTHROPIC_API_KEY ----------
 
 export function mockNotes(content: string): string {
@@ -107,6 +153,40 @@ export function mockQuiz(): QuizQuestion[] {
       explanation: "ScholarAI sends recorded audio to OpenAI's Whisper API to produce the transcript.",
     },
   ];
+}
+
+export function mockEssay(topic: string): string {
+  return `[Mock essay — set ANTHROPIC_API_KEY in your env to generate real essays.]\n\nThe topic you provided was: "${topic}". With your Anthropic key in place, ScholarAI will produce a complete essay here, matched to the writing style of your sample. The output will include a thesis statement, three to four body paragraphs developing the argument, and a conclusion that ties back to the opening claim. The structure will follow the rhythms of your previous writing — paragraph length, sentence variety, vocabulary, and transitional patterns will all be matched as closely as possible.`;
+}
+
+export function mockPresentation(opts: {
+  slides: number;
+  includeQuiz: boolean;
+}): GeneratedPresentation {
+  const slides = Array.from({ length: Math.max(3, opts.slides) }).map((_, i) => ({
+    title: i === 0 ? "Mock Presentation" : `Slide ${i + 1}`,
+    bullets:
+      i === 0
+        ? ["This is a placeholder deck", "Set ANTHROPIC_API_KEY for real output"]
+        : ["First bullet point", "Second bullet point", "Third bullet point"],
+    notes: "Speaker notes appear here in the real version.",
+  }));
+  const quiz: GeneratedPresentation["quiz"] = opts.includeQuiz
+    ? [
+        {
+          question: "What enables real generation?",
+          options: [
+            "Just the Free plan",
+            "Setting ANTHROPIC_API_KEY",
+            "More coffee",
+            "Restarting your laptop",
+          ],
+          correct: 1,
+          explanation: "The Anthropic API key wires the app up to Claude.",
+        },
+      ]
+    : [];
+  return { slides, quiz };
 }
 
 export function mockSummary(): Summary {

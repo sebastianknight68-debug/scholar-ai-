@@ -30,6 +30,17 @@ export type StudySetRow = {
   created_at: string;
 };
 
+export type PresentationSlide = {
+  title: string;
+  bullets: string[];
+  notes?: string;
+};
+
+export type GeneratedPresentation = {
+  slides: PresentationSlide[];
+  quiz: QuizQuestion[];
+};
+
 export type UserProfileRow = {
   id: string;
   email: string;

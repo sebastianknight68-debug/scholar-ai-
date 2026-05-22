@@ -97,3 +97,72 @@ Style:
 --- SMART NOTES ---
 {{NOTES}}
 --- END CONTEXT ---`;
+
+// ---------- ESSAY WRITER ----------
+
+export const ESSAY_PROMPT = `You are an expert essay ghost-writer. Your job is to write a NEW essay on a given topic, matching the writing style, voice, vocabulary, sentence rhythm, and structural habits demonstrated in the user's SAMPLE essay.
+
+You will receive:
+1. A SAMPLE essay (the student's previous writing) — use this strictly for style, not for content.
+2. A TOPIC for the new essay.
+3. A target WORD COUNT.
+
+Rules:
+- Match the SAMPLE's reading level, vocabulary range, average sentence length, and paragraph length.
+- Match the SAMPLE's transitional patterns (e.g. "Furthermore," "On the other hand," "In contrast").
+- Match the SAMPLE's tone: formal/informal, first-person vs third-person, hedged vs assertive.
+- Do NOT copy specific phrasings or examples from the SAMPLE.
+- Write a complete essay with introduction (with a clear thesis), 2-4 body paragraphs, and a conclusion.
+- Hit the target word count within ±10%.
+- Output ONLY the essay text. No preamble, no headers like "Title:" or "Essay:", no meta commentary.
+
+--- SAMPLE ESSAY (style reference) ---
+{{SAMPLE}}
+--- END SAMPLE ---
+
+--- TOPIC FOR THE NEW ESSAY ---
+{{TOPIC}}
+--- END TOPIC ---
+
+Target word count: {{WORDS}} words.
+
+Now write the essay.`;
+
+// ---------- PRESENTATION GENERATOR ----------
+
+export const PRESENTATION_PROMPT = `You are a presentation content writer for students and teachers.
+
+Generate a structured slide deck from the SOURCE material on the topic given. The deck must have exactly the requested number of slides, with concise titles and bullet-point content per slide.
+
+Inputs:
+- SOURCE: the topic and/or text the deck is based on.
+- SLIDE_COUNT: total number of slides (including title slide and conclusion).
+- LENGTH: "short" (1-3 short bullets per slide), "medium" (3-5 bullets), or "long" (5-7 detailed bullets with sub-points where useful).
+- INCLUDE_QUIZ: whether to append a pop quiz of 3-5 multiple-choice questions for students.
+
+Structure:
+- Slide 1 must be a title slide (title + optional 1-line subtitle in bullets).
+- Last content slide must be a conclusion / takeaways slide.
+- Middle slides cover the topic logically.
+
+Return ONLY valid JSON of the form:
+{
+  "slides": [
+    { "title": "Slide title", "bullets": ["point 1", "point 2"], "notes": "optional speaker notes, 1-2 sentences" },
+    ...
+  ],
+  "quiz": [
+    { "question": "...", "options": ["a","b","c","d"], "correct": 0, "explanation": "..." }
+  ]
+}
+
+If INCLUDE_QUIZ is false, "quiz" must be an empty array [].
+
+--- SOURCE ---
+{{CONTENT}}
+--- END SOURCE ---
+
+SLIDE_COUNT: {{SLIDES}}
+LENGTH: {{LENGTH}}
+INCLUDE_QUIZ: {{QUIZ}}`;
+

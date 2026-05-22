@@ -9,12 +9,16 @@ import {
   CreditCard,
   Settings,
   LogOut,
+  PenLine,
+  Presentation,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/dashboard", label: "Study sets", icon: LayoutDashboard },
   { href: "/dashboard/new", label: "New set", icon: Plus },
+  { href: "/dashboard/essay", label: "Essay writer", icon: PenLine },
+  { href: "/dashboard/presentation", label: "Presentation", icon: Presentation },
   { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
